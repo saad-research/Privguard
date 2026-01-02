@@ -1,0 +1,142 @@
+{
+  "version": "1.0",
+  "description": "Sensitive data detection patterns for PrivGuard AI Privacy Gateway",
+
+  "patterns": [
+
+ 
+    {
+      "id": "PII_EMAIL",
+      "description": "Email addresses",
+      "category": "PII",
+      "risk_level": "MEDIUM",
+      "regex": "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+    },
+    {
+      "id": "PII_PHONE",
+      "description": "Phone numbers (international & local)",
+      "category": "PII",
+      "risk_level": "MEDIUM",
+      "regex": "(\\+\\d{1,3}[\\s-]?)?\\d{10,14}"
+    },
+    {
+      "id": "PII_ADDRESS",
+      "description": "Physical addresses (street indicators)",
+      "category": "PII",
+      "risk_level": "MEDIUM",
+      "regex": "\\b(street|st\\.|road|rd\\.|avenue|ave\\.|lane|ln\\.|block|sector|apartment|apt)\\b"
+    },
+    {
+      "id": "PII_DOB",
+      "description": "Dates of birth",
+      "category": "PII",
+      "risk_level": "HIGH",
+      "regex": "\\b(\\d{2}[/-]\\d{2}[/-]\\d{4})\\b"
+    },
+
+
+    {
+      "id": "UNI_STUDENT_ID",
+      "description": "Student or enrollment ID numbers",
+      "category": "Academic",
+      "risk_level": "HIGH",
+      "regex": "\\b(student[_\\s-]?id|enrollment[_\\s-]?no|roll[_\\s-]?number)\\b"
+    },
+    {
+      "id": "UNI_TRANSCRIPT",
+      "description": "Academic transcripts or grades",
+      "category": "Academic",
+      "risk_level": "HIGH",
+      "regex": "\\b(transcript|cgpa|gpa|grades|marksheet)\\b"
+    },
+    {
+      "id": "UNI_RESEARCH_UNPUBLISHED",
+      "description": "Unpublished or confidential research",
+      "category": "Academic",
+      "risk_level": "HIGH",
+      "regex": "\\b(unpublished research|draft paper|internal review|under embargo)\\b"
+    },
+
+
+
+    {
+      "id": "CONFIDENTIAL_MARKER",
+      "description": "Explicit confidentiality labels",
+      "category": "Confidential",
+      "risk_level": "HIGH",
+      "regex": "\\b(confidential|strictly confidential|internal use only|do not share|nda)\\b"
+    },
+    {
+      "id": "INTELLECTUAL_PROPERTY",
+      "description": "Trade secrets or proprietary information",
+      "category": "Enterprise",
+      "risk_level": "HIGH",
+      "regex": "\\b(trade secret|proprietary algorithm|internal architecture|source code leak)\\b"
+    },
+
+
+    {
+      "id": "API_KEY",
+      "description": "API keys or tokens",
+      "category": "Credentials",
+      "risk_level": "CRITICAL",
+      "regex": "\\b(api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token)\\b"
+    },
+    {
+      "id": "PASSWORD",
+      "description": "Passwords or authentication secrets",
+      "category": "Credentials",
+      "risk_level": "CRITICAL",
+      "regex": "\\b(password|passwd|pwd)\\b"
+    },
+    {
+      "id": "PRIVATE_KEY",
+      "description": "Cryptographic private keys",
+      "category": "Credentials",
+      "risk_level": "CRITICAL",
+      "regex": "-----BEGIN (RSA|EC|DSA)? PRIVATE KEY-----"
+    },
+
+
+
+    {
+      "id": "FINANCIAL_BANK",
+      "description": "Bank account or financial details",
+      "category": "Financial",
+      "risk_level": "HIGH",
+      "regex": "\\b(account[_\\s-]?number|iban|ifsc|swift)\\b"
+    },
+    {
+      "id": "FINANCIAL_CARD",
+      "description": "Credit or debit card numbers",
+      "category": "Financial",
+      "risk_level": "CRITICAL",
+      "regex": "\\b(?:\\d[ -]*?){13,16}\\b"
+    },
+    {
+      "id": "HEALTH_DATA",
+      "description": "Medical or health-related information",
+      "category": "Health",
+      "risk_level": "HIGH",
+      "regex": "\\b(medical record|diagnosis|prescription|patient id|health report)\\b"
+    },
+
+
+
+    {
+      "id": "PROMPT_INJECTION",
+      "description": "Prompt injection or instruction override attempts",
+      "category": "Attack",
+      "risk_level": "HIGH",
+      "regex": "\\b(ignore previous instructions|bypass safety|act as|you are now|system prompt)\\b"
+    },
+    {
+      "id": "DATA_EXFILTRATION",
+      "description": "Attempts to extract or leak stored data",
+      "category": "Attack",
+      "risk_level": "HIGH",
+      "regex": "\\b(show all data|dump database|export logs|leak information)\\b"
+    }
+
+  ]
+}

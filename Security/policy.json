@@ -1,0 +1,94 @@
+{
+  "version": "1.0",
+  "description": "Policy and routing rules for PrivGuard AI Privacy Gateway",
+
+  "risk_policies": {
+    "CRITICAL": {
+      "action": "BLOCK",
+      "route": "NONE",
+      "log_level": "ALERT",
+      "reason": "Critical data exposure risk (credentials, private keys, financial identifiers)"
+    },
+    "HIGH": {
+      "action": "BLOCK",
+      "route": "NONE",
+      "log_level": "WARN",
+      "reason": "High risk data detected (PII, confidential, academic, prompt injection)"
+    },
+    "MEDIUM": {
+      "action": "REDACT",
+      "route": "SAFE_MODE",
+      "log_level": "INFO",
+      "reason": "Moderate sensitivity data can be sanitized before processing"
+    },
+    "LOW": {
+      "action": "ALLOW",
+      "route": "CLOUD_LLM",
+      "log_level": "INFO",
+      "reason": "Low risk request with no sensitive data"
+    }
+  },
+
+  "role_policies": {
+    "student": {
+      "max_allowed_risk": "LOW",
+      "allowed_routes": ["CLOUD_LLM"],
+      "notes": "Students are restricted from sending sensitive academic or personal data to LLMs"
+    },
+    "researcher": {
+      "max_allowed_risk": "HIGH",
+      "allowed_routes": ["SAFE_MODE", "CLOUD_LLM"],
+      "notes": "Researchers may process sensitive data, but it is forced to Safe Mode."
+},
+    "employee": {
+      "max_allowed_risk": "MEDIUM",
+      "allowed_routes": ["SAFE_MODE"],
+      "notes": "Enterprise users are restricted from cloud routing for sensitive data"
+    },
+    "admin": {
+      "max_allowed_risk": "HIGH",
+      "allowed_routes": ["SAFE_MODE"],
+      "notes": "Admins may handle high-risk data but never via cloud LLMs"
+    }
+  },
+
+  "routing_rules": {
+    "CLOUD_LLM": {
+      "allowed_risks": ["LOW"],
+      "description": "Public cloud LLMs are used only for low-risk, non-sensitive prompts"
+    },
+    "SAFE_MODE": {
+      "allowed_risks": ["MEDIUM", "HIGH"],
+      "description": "Safe or local processing mode with redaction and stricter logging"
+    },
+    "NONE": {
+      "allowed_risks": ["CRITICAL"],
+      "description": "Request is blocked and not processed by any model"
+    }
+  },
+
+  "redaction_policy": {
+    "enabled": true,
+    "redact_fields": [
+      "email",
+      "phone",
+      "student_id",
+      "api_key",
+      "access_token",
+      "password",
+      "bank_account",
+      "credit_card",
+      "health_data"
+    ],
+    "replacement_token": "[REDACTED]"
+  },
+
+  "audit_policy": {
+    "store_raw_prompt": false,
+    "store_detected_patterns": true,
+    "store_risk_level": true,
+    "store_action_taken": true,
+    "store_route_selected": true,
+    "tamper_evident": true
+  }
+}

@@ -77,10 +77,10 @@
 
     {
       "id": "API_KEY",
-      "description": "API keys or tokens",
+      "description": "API keys and secret tokens",
       "category": "Credentials",
       "risk_level": "CRITICAL",
-      "regex": "\\b(api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token)\\b"
+      "regex": "(?i)(sk-[a-z0-9_-]{8,}|pk-[a-z0-9_-]{8,}|ghp_[a-z0-9]{20,}|api[_-]?key[^\\S\\n]*[:=]?[^\\S\\n]*[a-z0-9._-]{12,})"
     },
     {
       "id": "PASSWORD",

@@ -103,6 +103,10 @@ User Prompt
    → Policy Engine
    → { BLOCK | REDACT | LOCAL | CLOUD }
 ```
+### Architecture Diagram
+
+![Architecture](Architecture/architect_priv.png)
+
 
 PrivGuard is middleware infrastructure, not an end-user chatbot.
 

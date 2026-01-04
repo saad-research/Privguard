@@ -201,17 +201,21 @@ Processed locally. No data sent to cloud LLM.
 ### Dev Lead
 
 * Gateway architecture and API orchestration
-* LLM routing logic (Cloud vs Local)
-* Backend integration and system stability
+* Hybrid routing engine (Cloud → Safe Mode → Local LLM)
+* Redaction & sanitization pipeline implementation
+* Policy engine integration and risk-based enforcement logic
+* Design of RBAC execution behavior and escalation thresholds
+* Data sovereignty execution model (routing guarantees)
+* System reliability, testing, and behavior validation
 
 ### Security Lead
 
 * Threat modeling and attack surface analysis
 * Sensitive data taxonomy and detection rules (`patterns.json`)
-* Risk classification and policy specification (`policy.json`)
-* Role-based access control (RBAC) design
-* Data sovereignty and routing justification
-* Privacy-preserving audit and logging strategy
+* Risk classification and policy specification
+* Role-based access control (RBAC) policy rules (`policy.json`)
+* Data handling principles and routing justification
+* Privacy-preserving audit logging strategy
 * Red-team prompt design and abuse simulation
 
 ---

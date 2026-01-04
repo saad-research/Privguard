@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "description": "Audit logging and integrity policy for the PrivGuard AI Privacy Gateway",
+
+  "privacy_guards": {
+    "store_raw_prompt": false,
+    "store_redacted_prompt": false,
+    "store_prompt_hash": true,
+    "hash_algorithm": "SHA256",
+    "hash_salt_strategy": "per_request"
+  },
+
+  "log_scope": {
+    "log_on_actions": ["ALLOW", "REDACT", "BLOCK"],
+    "log_on_risk_levels": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+    "log_failed_requests": true
+  },
+
+  "log_fields": {
+    "required": [
+      "event_id",
+      "timestamp_utc",
+      "user_role",
+      "detected_risk_level",
+      "matched_pattern_ids",
+      "policy_action",
+      "routing_decision",
+      "request_hash",
+      "previous_log_hash",
+      "current_log_hash"
+    ],
+    "optional": [
+      "processing_latency_ms",
+      "policy_version"
+    ]
+  },
+
+  "integrity_controls": {
+    "tamper_evident": true,
+    "hash_chain_enabled": true,
+    "chain_start_mode": "genesis_hash",
+    "hash_algorithm": "SHA256",
+    "enforce_append_only": true
+  },
+
+  "access_controls": {
+    "log_read_roles": ["admin", "auditor"],
+    "log_write_roles": ["system"],
+    "log_delete_allowed": false
+  },
+
+  "retention_policy": {
+    "enabled": true,
+    "retention_days": 30,
+    "deletion_method": "cryptographic_expiry"
+  },
+
+  "compliance_notes": {
+    "gdpr_alignment": true,
+    "data_minimization": true,
+    "purpose_limitation": "Security auditing only",
+    "no_model_training_use": true
+  }
+}

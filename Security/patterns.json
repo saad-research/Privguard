@@ -16,7 +16,7 @@
       "id": "PII_PHONE",
       "description": "Phone numbers (international & local)",
       "category": "PII",
-      "risk_level": "MEDIUM",
+      "risk_level": "HIGH",
       "regex": "(\\+\\d{1,3}[\\s-]?)?\\d{10,14}"
     },
     {
@@ -127,7 +127,7 @@
       "id": "PROMPT_INJECTION",
       "description": "Prompt injection or instruction override attempts",
       "category": "Attack",
-      "risk_level": "HIGH",
+      "risk_level": "CRITICAL",
       "regex": "\\b(ignore previous instructions|bypass safety|act as|you are now|system prompt)\\b"
     },
     {

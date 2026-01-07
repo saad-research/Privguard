@@ -1,9 +1,11 @@
+import hashlib
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 from app.detector import analyze_text
 from app.redactor import redact_text
 from app.content_safety import check_content_risk
 from app.policy import PolicyEngine
+from Security import log_event
 
 app = FastAPI(title="PrivGuard Core Gateway", version="0.2.0")
 policy = PolicyEngine()
@@ -49,27 +51,50 @@ class ProxyRequest(BaseModel):
 @app.post("/proxy")
 def proxy(req: ProxyRequest, x_user_role: str = Header(default="student")):
     try:
+        effective_role = (x_user_role or req.user_role or "student").lower()
         
         # 1) AZURE SAFETY CHECK (toxicity / violence / abuse)
-        
         azure_severity = check_content_risk(req.text)
 
         
         # 2) LOCAL PII / SECRET DETECTION
-        
         detections = analyze_text(req.text)
 
         
         # 3) POLICY ENGINE — decides BLOCK / LOCAL / REDACT / ALLOW
         
         decision = policy.evaluate(
-            role=x_user_role or req.user_role,
+            role=effective_role,
             detections=detections,
             azure_severity=azure_severity
         )
 
+        # 4) SECURITY AUDIT LOG (safe — never breaks API)
+
+        try:
+            request_hash = hashlib.sha256(req.text.encode()).hexdigest()
+
+            matched_patterns = [
+                d.get("entity_type", "UNKNOWN")
+                for d in detections
+            ]
+
+            log_event(
+                user_role=effective_role,
+                detected_risk=decision["risk_level"],
+                matched_patterns=matched_patterns,
+                action_taken=decision["action"],
+                routing_decision=decision.get("route", "UNKNOWN"),
+                request_hash=request_hash,
+                processing_latency_ms=None
+            )
+
+        except Exception as log_error:
+            # Never interrupt gateway execution if logging fails
+            print("⚠️ Audit log failed but request continued:", log_error)
+
         
-        # 4) ENFORCEMENT
+        # 5) ENFORCEMENT
         
 
         # BLOCKED
@@ -79,11 +104,11 @@ def proxy(req: ProxyRequest, x_user_role: str = Header(default="student")):
                 "action": "BLOCKED_BY_POLICY",
                 "risk_level": decision["risk_level"],
                 "risk_score": decision["risk_score"],
-                "message": "Request blocked due to security policy."
+                "message": decision.get("reason", "Request blocked due to security policy.")
             }
 
-        # LOCAL ROUTING (Data Sovereignty)
-        if decision["action"] == "LOCAL":
+        # LOCAL / SAFE MODE
+        if decision.get("route") == "SAFE_MODE" or decision["action"] == "LOCAL":
             sanitized = redact_text(req.text, detections)
             return {
                 "status": "success",
@@ -94,9 +119,8 @@ def proxy(req: ProxyRequest, x_user_role: str = Header(default="student")):
                 "llm_response": "[LOCAL] Processed on-prem. No data left the network."
             }
 
-        # REDACT + SEND TO CLOUD
+        # CLOUD ROUTE (default)
         sanitized = redact_text(req.text, detections)
-
         return {
             "status": "success",
             "action": "ROUTED_TO_CLOUD_OPENAI",

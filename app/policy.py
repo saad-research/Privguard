@@ -2,9 +2,11 @@ import json
 import os
 from typing import List, Dict
 
-# Safe Policy Loader (with fallback)
-
 def load_policy_file():
+    """
+    Safe policy loader with fallback defaults.
+    """
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
     policy_path = os.path.join(base_dir, "..", "Security", "policy.json")
 
@@ -22,11 +24,10 @@ def load_policy_file():
             "redaction_policy": {}
         }
 
+
 POLICY = load_policy_file()
 
-
-# Risk Weights (used only for scoring / comparisons)
-
+# Risk Weights (used only for scoring)
 RISK_WEIGHT = {
     "CRITICAL": 100,
     "HIGH": 75,
@@ -34,6 +35,7 @@ RISK_WEIGHT = {
     "LOW": 10,
     "UNKNOWN": 0,
 }
+
 
 class PolicyEngine:
 
@@ -49,7 +51,7 @@ class PolicyEngine:
         role = (role or "student").lower()
         role_policy = self.role_policies.get(role, self.role_policies.get("student", {}))
 
-        # Determine highest-risk detected entity
+        # Determine highest-risk entity
         highest_level = "LOW"
         highest_score = 0
 
@@ -61,7 +63,7 @@ class PolicyEngine:
                 highest_score = score
                 highest_level = lvl
 
-        # Azure Safety Override (toxicity / violence)
+        # Azure Safety Override
         if azure_severity >= 4:
             return {
                 "action": "BLOCK",
@@ -71,14 +73,38 @@ class PolicyEngine:
                 "reason": "Blocked by Azure AI Content Safety"
             }
 
-        # Get base risk policy from policy.json
 
+        # --- Injection / Policy Bypass Hard Block ---
+
+        attack_entities = [
+            "PROMPT_INJECTION",
+            "DATA_EXFILTRATION",
+            "POLICY_BYPASS",
+            "SYSTEM_PROMPT_ACCESS"
+        ]
+
+        detected_ids = [d.get("entity_type", "") for d in detections]
+
+        if any(a in detected_ids for a in attack_entities):
+            return {
+                "action": "BLOCK",
+                "route": "NONE",
+                "risk_level": "CRITICAL",
+                "risk_score": 100,
+                "reason": "Adversarial prompt injection / data exfiltration attempt blocked"
+            }
+
+        # Apply Base Risk Policy
+        
         risk_policy = self.risk_policies.get(highest_level, {})
+
         action = risk_policy.get("action", "ALLOW")
         route = risk_policy.get("route", "CLOUD_LLM")
         reason = risk_policy.get("reason", "Policy applied")
 
-        # Enforce role maximum allowed risk
+
+        # Role Maximum Risk Enforcement
+
         max_allowed = role_policy.get("max_allowed_risk", "LOW")
 
         if highest_score > RISK_WEIGHT[max_allowed]:
@@ -86,16 +112,18 @@ class PolicyEngine:
             route = "NONE"
             reason = f"Role '{role}' is not permitted to handle {highest_level} data"
 
-        # Validate allowed routes for role
+        # Route Validation — Force SAFE_MODE
+        # (Only for sensitive data, NOT attacks)
         allowed_routes = role_policy.get("allowed_routes", ["CLOUD_LLM"])
 
         if route not in allowed_routes:
-            # Force SAFE_MODE instead of silently blocking
             route = "SAFE_MODE"
             action = "REDACT"
             reason = "Route restricted for this role — forcing SAFE_MODE"
 
-        # Data Sovereignty Override (Internal / Confidential → LOCAL SAFE MODE)
+        # Data Sovereignty Override
+        # (Internal / Confidential data → Local processing)
+
         sovereignty_markers = ["internal", "confidential", "embargo", "do not share"]
         text_blob = str(detections).lower()
 
@@ -105,7 +133,7 @@ class PolicyEngine:
                 action = "REDACT"
                 reason = "Data Sovereignty Policy — processed locally (SAFE_MODE)"
 
-        # Final decision output (auditable & explainable)
+        # Final Structured Decision
         return {
             "action": action,          # BLOCK / REDACT / ALLOW
             "route": route,            # CLOUD_LLM / SAFE_MODE / NONE

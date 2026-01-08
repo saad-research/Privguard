@@ -97,11 +97,11 @@ with tab1:
     with col2:
         st.markdown("**Quick Test Vectors:**")
         if st.button("📝 Test: Student PII"):
-             st.code("My email is student@uni.edu", language="text")
+             st.code("{'text':'My email is student@uni.edu'}", language="text")
         if st.button("🔑 Test: API Key Leak"):
-             st.code("Here is our API key sk-test-123456", language="text")
+             st.code("{'text':'Here is our API key sk-test-123456'}", language="text")
         if st.button("🕵️ Test: Internal Data"):
-             st.code("CONFIDENTIAL: Patent draft V1", language="text")
+             st.code("{'text':'CONFIDENTIAL: Patent draft V1'}", language="text")
 
 
 # -------------------------------------------------
